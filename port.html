@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Study Planner</title>
+
+<style>
+    body{
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        padding: 40px;
+        min-height: 100vh;
+    }
+    
+    .container{
+        max-width: 900px;
+        margin: auto;
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    }
+    
+    h2{
+        text-align: center;
+        background: linear-gradient(to right, #ff758c, #ff7eb3);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 34px;
+        margin-bottom: 35px;
+    }
+    
+    label{
+        font-weight: 600;
+        font-size: 18px;
+        color: #444;
+        display: block;
+        margin-bottom: 8px;
+    }
+    
+    input, textarea{
+        width: 100%;
+        padding: 16px 18px;
+        margin-bottom: 25px;
+        font-size: 16px;
+        border-radius: 12px;
+        border: 2px solid #ddd;
+        transition: 0.3s;
+    }
+    
+    textarea{
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    input:focus, textarea:focus{
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 8px rgba(102,126,234,0.6);
+    }
+    
+    button{
+        width: 100%;
+        padding: 18px;
+        font-size: 20px;
+        font-weight: bold;
+        border-radius: 40px;
+        background: linear-gradient(to right, #43e97b, #38f9d7);
+        border: none;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-top: 10px;
+    }
+    
+    button:hover{
+        transform: scale(1.05);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    }
+    
+    .day{
+        background: linear-gradient(135deg, #fdfbfb, #ebedee);
+        padding: 25px;
+        margin-top: 20px;
+        border-radius: 18px;
+        border-left: 10px solid;
+        border-image: linear-gradient(#ff758c, #ff7eb3) 1;
+        transition: 0.3s;
+    }
+    
+    .day:hover{
+        transform: translateY(-6px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    }
+    
+    .day strong{
+        font-size: 20px;
+        color: #667eea;
+    }
+    
+    .day em{
+        display: block;
+        margin-top: 12px;
+        color: #ff758c;
+        font-weight: bold;
+    }
+    
+    input[type="checkbox"]{
+        accent-color: #667eea;
+        transform: scale(1.3);
+        margin-right: 12px;
+    }
+    
+    .progress{
+        margin-top: 35px;
+        padding: 20px;
+        border-radius: 15px;
+        background: linear-gradient(to right, #fa709a, #fee140);
+        font-size: 22px;
+        font-weight: bold;
+        text-align: center;
+    }
+    </style>
+    
+    
+</head>
+
+<body>
+
+<div class="container">
+    <h2>AI-Powered Study Planner</h2>
+
+    <label>Exam Date</label>
+    <input type="date" id="examDate">
+
+    <label>Syllabus Topics (comma separated)</label>
+    <textarea id="syllabus" rows="4"
+    placeholder="Maths, Physics, Chemistry, Biology"></textarea>
+
+    <button onclick="generateTimetable()">Generate Timetable</button>
+
+    <div id="timetable"></div>
+    <div class="progress" id="progress"></div>
+</div>
+
+<script>
+    let totalTopics = 0;
+    
+    function generateTimetable() {
+    
+        // Get inputs
+        let examDateValue = document.getElementById("examDate").value;
+        let syllabusText = document.getElementById("syllabus").value;
+    
+        if (examDateValue === "" || syllabusText === "") {
+            alert("Please enter exam date and syllabus");
+            return;
+        }
+    
+        // Convert syllabus into array
+        let topics = syllabusText.split(",");
+    
+        // Get dates
+        let today = new Date();
+        let examDate = new Date(examDateValue);
+    
+        // Calculate number of days
+        let daysLeft = 0;
+        let tempDate = new Date(today);
+    
+        while (tempDate <= examDate) {
+            daysLeft++;
+            tempDate.setDate(tempDate.getDate() + 1);
+        }
+    
+        let timetable = document.getElementById("timetable");
+        timetable.innerHTML = "";
+    
+        // Topics per day (simple logic)
+        let topicsPerDay = Math.ceil(topics.length / daysLeft);
+        let index = 0;
+        totalTopics = 0;
+    
+        // Create timetable
+        for (let day = 1; day <= daysLeft; day++) {
+    
+            let dayDiv = document.createElement("div");
+            dayDiv.className = "day";
+            dayDiv.innerHTML = "<strong>Day " + day + "</strong><br>";
+    
+            for (let i = 0; i < topicsPerDay && index < topics.length; i++) {
+                dayDiv.innerHTML +=
+                    "<input type='checkbox' onclick='updateProgress()'> " +
+                    topics[index].trim() + "<br>";
+                index++;
+                totalTopics++;
+            }
+    
+            if (index >= topics.length) {
+                dayDiv.innerHTML += "<em>Revision / Practice</em>";
+            }
+    
+            timetable.appendChild(dayDiv);
+        }
+    
+        document.getElementById("progress").innerText =
+            "Progress: 0 / " + totalTopics + " topics completed";
+    }
+    
+    function updateProgress() {
+        let boxes = document.querySelectorAll("input[type='checkbox']");
+        let completed = 0;
+    
+        for (let i = 0; i < boxes.length; i++) {
+            if (boxes[i].checked) {
+                completed++;
+            }
+        }
+    
+        document.getElementById("progress").innerText =
+            "Progress: " + completed + " / " + totalTopics + " topics completed";
+    }
+    </script>
+    
+
+</body>
+</html>
